@@ -11,7 +11,7 @@ import {accountBrand} from './account-brand.js';
 import cityLogo from './city-bank.webp';
 import bkashLogo from './bkash.svg';
 import seblLogo from './sebl.png';
-import amexLogo from './amex.webp';
+import amexLogo from './amex-compact.avif';
 import Insights from './Insights.jsx';
 import {playSound} from './sounds.js';
 import { accountLedger, localTransactionDate } from './account-ledger.js';
