@@ -1,5 +1,5 @@
 export const accountTypes = { cash: 'Cash', bank: 'Bank', mobile_banking: 'Mobile banking', credit_card: 'Credit card', savings: 'Savings', loan: 'Loan payable', receivable: 'Receivable' };
-export const money = value => new Intl.NumberFormat('en-BD', {style:'currency',currency:'BDT',maximumFractionDigits:2}).format(value || 0);
+export const money = value => new Intl.NumberFormat('en-BD', {style:'currency',currency:'BDT',currencyDisplay:'narrowSymbol',maximumFractionDigits:2}).format(value || 0);
 export function cents(value) {
   const text = String(value).trim();
   if (!/^-?\d+(\.\d{1,2})?$/.test(text)) throw new Error('Enter an amount with at most two decimal places.');
