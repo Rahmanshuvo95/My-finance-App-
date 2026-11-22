@@ -23,6 +23,8 @@ alter table public.transactions add constraint transactions_transfer_check check
  (type<>'transfer' and transfer_account_id is null)
 );
 alter table public.accounts enable row level security;
+alter table public.accounts add column if not exists credit_limit numeric(16,2) check (credit_limit >= 0);
+grant select, insert, update on public.accounts, public.transactions to authenticated;
 alter table public.transactions enable row level security;
 drop policy if exists "Own accounts" on public.accounts;
 create policy "Own accounts" on public.accounts for all to authenticated
