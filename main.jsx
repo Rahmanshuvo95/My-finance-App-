@@ -11,6 +11,7 @@ import {accountBrand} from './account-brand.js';
 import cityLogo from './city-bank.webp';
 import bkashLogo from './bkash.svg';
 import seblLogo from './sebl.png';
+import amexLogo from './amex.webp';
 import Insights from './Insights.jsx';
 import {playSound} from './sounds.js';
 import { accountLedger, localTransactionDate } from './account-ledger.js';
@@ -31,7 +32,7 @@ Object.assign(icons,{
 });
 function Icon({name,...props}){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{icons[name]||icons.accounts}</svg>;}
 function AccountLogo({account}) {
- const brand=accountBrand(account),src={city:cityLogo,bkash:bkashLogo,sebl:seblLogo}[brand];
+ const brand=accountBrand(account),src={city:cityLogo,bkash:bkashLogo,sebl:seblLogo,amex:amexLogo}[brand];
  const [failed,setFailed]=useState(false);
  return <span className={'account-card-logo '+(src&&!failed?'bank-logo':'color-logo')}>{src&&!failed?<img src={src} alt="" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:<Icon name={account.type}/>}</span>;
 }
@@ -47,7 +48,7 @@ function App(){
  const sessionRef=useRef(null),requestRef=useRef(0),saveRef=useRef(false),dialogRef=useRef(null),previousFocus=useRef(null);
  const authenticated=demo||!!session;
  useEffect(()=>{
-  if(demo){setAccounts([{id:'demo-cash',name:'Everyday cash',type:'cash',opening_balance:15000},{id:'demo-bank',name:'City Bank',type:'bank',opening_balance:42000},{id:'demo-card',name:'SEBL Credit Card',type:'credit_card',opening_balance:-8500,credit_limit:100000},{id:'demo-bkash',name:'bKash',type:'mobile_banking',opening_balance:4800}]);setTransactions([['income','Salary',51000,'demo-bank'],['income','Business',12000,'demo-bank'],['expense','Food & drinks',8200,'demo-cash'],['expense','Shopping',6500,'demo-card'],['expense','Transport',3200,'demo-cash'],['expense','Bills',4500,'demo-bank'],['expense','Family',5000,'demo-bank']].map(([type,category,amount,account_id],i)=>({id:'demo-'+i,type,category,amount,account_id,transaction_date:today(),note:'Demo '+category})));return;}
+  if(demo){setAccounts([{id:'demo-cash',name:'Everyday cash',type:'cash',opening_balance:15000},{id:'demo-bank',name:'City Bank',type:'bank',opening_balance:42000},{id:'demo-card',name:'SEBL Credit Card',type:'credit_card',opening_balance:-8500,credit_limit:100000},{id:'demo-bkash',name:'bKash',type:'mobile_banking',opening_balance:4800},{id:'demo-amex',name:'City Bank Amex',type:'credit_card',opening_balance:-2500,credit_limit:50000}]);setTransactions([['income','Salary',51000,'demo-bank'],['income','Business',12000,'demo-bank'],['expense','Food & drinks',8200,'demo-cash'],['expense','Shopping',6500,'demo-card'],['expense','Transport',3200,'demo-cash'],['expense','Bills',4500,'demo-bank'],['expense','Family',5000,'demo-bank']].map(([type,category,amount,account_id],i)=>({id:'demo-'+i,type,category,amount,account_id,transaction_date:today(),note:'Demo '+category})));return;}
   let alive=true;
   db.auth.getSession().then(({data,error})=>{if(alive){if(error)setError(error.message);sessionRef.current=data.session;setSession(data.session);setBoot(false);}});
   const {data:{subscription}}=db.auth.onAuthStateChange((_event,s)=>{sessionRef.current=s;setSession(s);setBoot(false);if(!s){requestRef.current++;setAccounts([]);setTransactions([]);}});
