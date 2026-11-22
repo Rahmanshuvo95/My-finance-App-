@@ -1,4 +1,4 @@
-import {isLoanOpening} from './loan-meta.js';
+import {isLoanOpening,loanMeta} from './loan-meta.js';
 export const accountTypes = { cash: 'Cash', bank: 'Bank', mobile_banking: 'Mobile banking', credit_card: 'Credit card', savings: 'Savings', loan: 'Loan payable', receivable: 'Receivable' };
 export const money = value => new Intl.NumberFormat('en-BD', {style:'currency',currency:'BDT',currencyDisplay:'narrowSymbol',maximumFractionDigits:2}).format(value || 0);
 export function cents(value) {
@@ -11,6 +11,7 @@ export function cents(value) {
 export function balances(accounts, transactions) {
   const values = Object.fromEntries(accounts.map(a => [a.id, cents(a.opening_balance || 0)]));
   for (const t of transactions) {
+    if(loanMeta(t)?.action==='allocate')continue;
     const amount = cents(t.amount);
     if (t.type === 'transfer' && !t.transfer_account_id) continue;
     if (Object.hasOwn(values,t.account_id)) values[t.account_id] += t.type === 'income' ? amount : -amount;

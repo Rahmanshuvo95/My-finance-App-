@@ -28,3 +28,14 @@ test('editing a lending entry cannot erase amounts already repaid',()=>{
 test('same normalized person groups together and legacy balances remain visible',()=>{
  let rows=append([],form('r','lend',100,' Rahim  '));rows=append(rows,form('r','lend',200,'rahim'));const s=loanSummary({...accounts[1],opening_balance:500},rows,800);assert.equal(s.people.length,1);assert.equal(s.people[0].balance,300);assert.equal(s.unassigned,500);
 });
+import {accountLedger} from './account-ledger.js';
+test('assign existing balances to people without double counting cash or loans',()=>{
+ for(const [id,type,opening_balance] of [['r','receivable',10000],['p','loan',-10000]]){
+  const a=[accounts[0],{id,type,opening_balance}];
+  const entry={...loanPayload(form(id,'allocate',6000),a,[],{},null),id:'allocation'};
+  const v=balances(a,[entry]);assert.equal(v[id],opening_balance);assert.equal(v.cash,50000);
+  const summary=loanSummary(a[1],[entry],v[id]);assert.equal(summary.people[0].balance,6000);assert.equal(summary.unassigned,4000);
+  assert.equal(accountLedger(a[1],[entry])[0].change,0);assert.deepEqual(totals([entry],'2026-11'),{income:0,expense:0});
+  assert.throws(()=>loanPayload(form(id,'allocate',5000,'Karim'),a,[entry],{},null));
+ }
+});

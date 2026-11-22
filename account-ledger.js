@@ -1,3 +1,4 @@
+import {loanMeta} from './loan-meta.js';
 import { cents } from './ledger.js';
 
 export function accountLedger(account, transactions) {
@@ -10,7 +11,7 @@ export function accountLedger(account, transactions) {
   return entries.map(row => {
     const amount = cents(row.amount);
     const incoming = row.type === 'income' || (row.type === 'transfer' && row.transfer_account_id === account.id);
-    const change = row.type === 'transfer' && !row.transfer_account_id ? 0 : incoming ? amount : -amount;
+    const change = loanMeta(row)?.action==='allocate' ? 0 : row.type === 'transfer' && !row.transfer_account_id ? 0 : incoming ? amount : -amount;
     running += change;
     return { ...row, incoming, change: change / 100, balance: running / 100 };
   });
