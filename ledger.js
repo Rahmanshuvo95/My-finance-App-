@@ -1,3 +1,4 @@
+import {isLoanOpening} from './loan-meta.js';
 export const accountTypes = { cash: 'Cash', bank: 'Bank', mobile_banking: 'Mobile banking', credit_card: 'Credit card', savings: 'Savings', loan: 'Loan payable', receivable: 'Receivable' };
 export const money = value => new Intl.NumberFormat('en-BD', {style:'currency',currency:'BDT',currencyDisplay:'narrowSymbol',maximumFractionDigits:2}).format(value || 0);
 export function cents(value) {
@@ -18,7 +19,7 @@ export function balances(accounts, transactions) {
   return Object.fromEntries(Object.entries(values).map(([id,value])=>[id,value/100]));
 }
 export function totals(transactions, month) {
-  const rows = transactions.filter(t=>t.transaction_date.slice(0,7) === month);
+  const rows = transactions.filter(t=>!isLoanOpening(t)&&t.transaction_date.slice(0,7) === month);
   return {income:rows.filter(t=>t.type==='income').reduce((sum,t)=>sum+cents(t.amount),0)/100,expense:rows.filter(t=>t.type==='expense').reduce((sum,t)=>sum+cents(t.amount),0)/100};
 }
 export function validateTransaction(t) {

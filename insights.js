@@ -1,9 +1,10 @@
+import {isLoanOpening} from './loan-meta.js';
 import { cents } from './ledger.js';
 
 export function categoryInsights(transactions, month, type) {
  const groups = new Map();
  for (const row of transactions) {
-  if (row.type !== type || row.transaction_date.slice(0, 7) !== month) continue;
+  if (isLoanOpening(row) || row.type !== type || row.transaction_date.slice(0, 7) !== month) continue;
   const name = row.category?.trim() || 'Other';
   groups.set(name, (groups.get(name) || 0) + cents(row.amount));
  }

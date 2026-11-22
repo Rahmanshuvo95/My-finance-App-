@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test ledger.test.js card-balances.test.js account-ledger.test.js insights.test.js"
+    "test": "node --test *.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
