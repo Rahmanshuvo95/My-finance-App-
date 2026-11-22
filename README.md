@@ -27,3 +27,10 @@ Set Supabase Authentication → URL Configuration → Site URL to the deployed U
 Opening balances represent net value: assets and receivables are positive, debts are negative. Bank-to-card and bank-to-loan transfers reduce debt without creating a second expense. Lending money is a transfer from cash/bank to a receivable account; repayment is the reverse. Savings deposits are transfers.
 
 The app reloads from the cloud on sign in, refresh, returning to the tab and reconnecting. An internet connection is required to view and save financial data. The service worker does not cache private financial records. No automatic bank import or financial payment execution is provided.
+
+
+## Production deployment
+
+Live app: https://instant-financial-tracker.vercel.app/
+
+The Vercel project is connected to this GitHub repository. Commits pushed to `main` automatically build and update the production app. Check the Vercel Deployments page for build status. Database schema changes are applied separately in Supabase.
