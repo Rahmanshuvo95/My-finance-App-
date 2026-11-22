@@ -6,6 +6,11 @@ import { accountTypes, money, cents, balances, totals, validateTransaction, csvC
 import './style.css';
 import './premium.css';
 import './liquid-glass.css';
+import './account-cards.css';
+import {accountBrand} from './account-brand.js';
+import cityLogo from './city-bank.webp';
+import bkashLogo from './bkash.svg';
+import seblLogo from './sebl.png';
 import Insights from './Insights.jsx';
 import {playSound} from './sounds.js';
 import { accountLedger, localTransactionDate } from './account-ledger.js';
@@ -25,6 +30,11 @@ Object.assign(icons,{
  receivable:<><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8m-8 4h5m-1 8v-5m-2 2 2-2 2 2"/></>
 });
 function Icon({name,...props}){return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{icons[name]||icons.accounts}</svg>;}
+function AccountLogo({account}) {
+ const brand=accountBrand(account),src={city:cityLogo,bkash:bkashLogo,sebl:seblLogo}[brand];
+ const [failed,setFailed]=useState(false);
+ return <span className={'account-card-logo '+(src&&!failed?'bank-logo':'color-logo')}>{src&&!failed?<img src={src} alt="" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:<Icon name={account.type}/>}</span>;
+}
 function App(){
  const [soundEnabled,setSoundEnabled]=useState(()=>{try{return localStorage.getItem('ift-sound')!=='off';}catch{return true;}});
  useEffect(()=>{const tap=event=>{if(soundEnabled&&event.target.closest('button')&&!event.target.closest('button:disabled'))playSound();};document.addEventListener('click',tap);return()=>document.removeEventListener('click',tap);},[soundEnabled]);
@@ -37,7 +47,7 @@ function App(){
  const sessionRef=useRef(null),requestRef=useRef(0),saveRef=useRef(false),dialogRef=useRef(null),previousFocus=useRef(null);
  const authenticated=demo||!!session;
  useEffect(()=>{
-  if(demo){setAccounts([{id:'demo-cash',name:'Everyday cash',type:'cash',opening_balance:3500},{id:'demo-bank',name:'Main bank',type:'bank',opening_balance:42000},{id:'demo-card',name:'Credit card',type:'credit_card',opening_balance:-8500,credit_limit:100000}]);setTransactions([['income','Salary',51000,'demo-bank'],['income','Business',12000,'demo-bank'],['expense','Food & drinks',8200,'demo-cash'],['expense','Shopping',6500,'demo-card'],['expense','Transport',3200,'demo-cash'],['expense','Bills',4500,'demo-bank'],['expense','Family',5000,'demo-bank']].map(([type,category,amount,account_id],i)=>({id:'demo-'+i,type,category,amount,account_id,transaction_date:today(),note:'Demo '+category})));return;}
+  if(demo){setAccounts([{id:'demo-cash',name:'Everyday cash',type:'cash',opening_balance:15000},{id:'demo-bank',name:'City Bank',type:'bank',opening_balance:42000},{id:'demo-card',name:'SEBL Credit Card',type:'credit_card',opening_balance:-8500,credit_limit:100000},{id:'demo-bkash',name:'bKash',type:'mobile_banking',opening_balance:4800}]);setTransactions([['income','Salary',51000,'demo-bank'],['income','Business',12000,'demo-bank'],['expense','Food & drinks',8200,'demo-cash'],['expense','Shopping',6500,'demo-card'],['expense','Transport',3200,'demo-cash'],['expense','Bills',4500,'demo-bank'],['expense','Family',5000,'demo-bank']].map(([type,category,amount,account_id],i)=>({id:'demo-'+i,type,category,amount,account_id,transaction_date:today(),note:'Demo '+category})));return;}
   let alive=true;
   db.auth.getSession().then(({data,error})=>{if(alive){if(error)setError(error.message);sessionRef.current=data.session;setSession(data.session);setBoot(false);}});
   const {data:{subscription}}=db.auth.onAuthStateChange((_event,s)=>{sessionRef.current=s;setSession(s);setBoot(false);if(!s){requestRef.current++;setAccounts([]);setTransactions([]);}});
@@ -117,13 +127,14 @@ function App(){
   const a=document.createElement('a');a.href=url;a.download=`ift-transactions-${month}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }
  function accountList(){
-  return accounts.length?<div className="list">{accounts.map(account=>{
-   const card=cardAmounts(account,values[account.id]);
-   return <div className="account-row" key={account.id}>
-    <button className={'account-icon '+account.type} aria-label={'Open ledger for '+account.name} onClick={()=>{setSelectedAccountId(account.id);setView('ledger');}}><Icon name={account.type}/></button>
-    <span className="row-label"><strong>{account.name}</strong><small>{accountTypes[account.type]||account.type}</small></span>
-    <span className="account-amounts">{account.type==='credit_card'?<><small>Available limit</small><strong>{card.available===null?'Not set':money(card.available)}</strong><small>Outstanding <span className="negative">{money(card.outstanding)}</span></small></>:<strong className={values[account.id]<0?'negative':''}>{money(values[account.id])}</strong>}</span>
-   </div>;
+  return accounts.length?<div className="account-cards" aria-label="Your accounts">{accounts.map(account=>{
+   const card=cardAmounts(account,values[account.id]),brand=accountBrand(account);
+   return <button type="button" className={'account-card brand-'+brand} key={account.id} aria-label={'Open ledger for '+account.name} onClick={()=>{setSelectedAccountId(account.id);setView('ledger');}}>
+    <span className="account-card-top"><AccountLogo account={account}/><span className="account-card-arrow" aria-hidden="true">&#8599;</span></span>
+    <span className="account-card-name">{account.name}</span><span className="account-card-type">{accountTypes[account.type]||account.type}</span>
+    <span className="account-card-balance">{account.type==='credit_card'?<><small>Available limit</small><strong>{card.available===null?'Not set':money(card.available)}</strong><small>Outstanding <b className="negative">{money(card.outstanding)}</b></small></>:<><small>Current balance</small><strong className={values[account.id]<0?'negative':''}>{money(values[account.id])}</strong></>}</span>
+    <span className="account-card-ledger">View ledger <span aria-hidden="true">&#8594;</span></span>
+   </button>;
   })}</div>:<Empty title="Add your first account" text="Keep cash, bank accounts and cards together." button="Add account" onClick={()=>open('account')}/>;
  }
  function transactionList(list){return list.length?<div className="list">{list.map(t=><button className="transaction-row" key={t.id} onClick={()=>open('transaction',t)}><span className={`transaction-icon ${t.type}`}><Icon name={t.type}/></span><span className="row-label"><strong>{t.note||t.category||t.type}</strong><small>{accountName(t.account_id)}{t.type==='transfer'?` → ${accountName(t.transfer_account_id)}`:''} · {new Date(t.transaction_date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</small></span><strong className={t.type==='income'?'positive':''}>{t.type==='income'?'+':t.type==='expense'?'−':''}{money(t.amount)}</strong></button>)}</div>:<Empty title="A fresh start" text="Your transactions for this month will appear here." button={accounts.length?'Add transaction':'Add an account'} onClick={()=>open(accounts.length?'transaction':'account')}/>;}
@@ -145,7 +156,7 @@ function App(){
     <Insights transactions={transactions} month={month}/><div className="overview-columns"><section><div className="section-heading"><h2>Your accounts <span className="count">{accounts.length}</span></h2><button className="text-button" onClick={()=>setView('accounts')}>View all</button></div>{accountList()}</section><section><div className="section-heading"><h2>Recent activity</h2><button className="text-button" onClick={()=>setView('activity')}>View all</button></div>{transactionList(rows.slice(0,5))}</section></div>
     {categories.length>0&&<section className="spending"><div className="section-heading"><h2>Where it went</h2><span className="muted">This month</span></div><div className="panel">{categories.slice(0,6).map(([name,amount])=><div className="category-row" key={name}><div><span>{name}</span><b>{money(amount/100)}</b></div><div className="bar-track"><span style={{width:`${summary.expense?amount/summary.expense:0}%`}}/></div></div>)}</div></section>}
    </>}
-   {view==='accounts'&&<><div className="toolbar"><p className="muted">{accounts.length} accounts · Available fund to use {money(funds.available)}</p><button className="primary" onClick={()=>open('account')}><Icon name="plus"/>Add account</button></div>{accountList()}<p className="help-note">Tap an account icon to open its ledger and account options.</p></>}
+   {view==='accounts'&&<><div className="toolbar"><p className="muted">{accounts.length} accounts · Available fund to use {money(funds.available)}</p><button className="primary" onClick={()=>open('account')}><Icon name="plus"/>Add account</button></div>{accountList()}<p className="help-note">Tap any account card to open its ledger and account options.</p></>}
    {view==='ledger'&&accounts.find(account=>account.id===selectedAccountId)&&<AccountLedger account={accounts.find(account=>account.id===selectedAccountId)} transactions={transactions} balance={values[selectedAccountId]} accountName={accountName} onBack={()=>setView('accounts')} onEdit={()=>open('account',accounts.find(account=>account.id===selectedAccountId))} onTransaction={row=>open('transaction',row)} onAdd={()=>open('chooseTransaction',{account_id:selectedAccountId})}/>}
    {view==='activity'&&<><div className="toolbar"><input className="search" type="search" placeholder="Search transactions" aria-label="Search transactions" value={search} onChange={e=>setSearch(e.target.value)}/><button className="primary" onClick={()=>open(accounts.length?'transaction':'account')}><Icon name="plus"/>Add new</button></div><div className="filters"><input type="month" aria-label="Transaction month" value={month} onChange={e=>setMonth(e.target.value)}/><select aria-label="Transaction type" value={filter} onChange={e=>setFilter(e.target.value)}><option value="all">All types</option><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option></select><select aria-label="Filter by account" value={accountFilter} onChange={e=>setAccountFilter(e.target.value)}><option value="all">All accounts</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select><button className="secondary" onClick={exportCsv} disabled={!rows.length}><Icon name="download"/>Export CSV</button></div>{transactionList(rows)}<p className="help-note">{rows.length} transactions in this view. Tap any entry to edit it.</p></>}
    {view==='settings'&&<><section className="panel settings-panel"><h2>Your profile</h2><div className="setting-line"><span>Interface sounds</span><button className="sound-toggle" type="button" role="switch" aria-checked={soundEnabled} onClick={()=>{setSoundEnabled(!soundEnabled);try{localStorage.setItem("ift-sound",soundEnabled?"off":"on");}catch{}}}>{soundEnabled?"On":"Off"}</button></div><p className="muted">{demo?'Demo session':session?.user.email}</p><div className="setting-line"><span>Currency</span><b>Bangladeshi taka · BDT</b></div><div className="setting-line"><span>Data storage</span><b>{demo?'Temporary demo session':'Your private cloud account'}</b></div><div className="setting-line"><span>Sync</span><b>{demo?'Disabled in demo':'On refresh and when you return'}</b></div><button className="secondary" onClick={async()=>{if(demo){location.href='/';return;}const {error}=await db.auth.signOut();if(error)setError(error.message);}}>Sign out</button></section><section className="panel settings-panel"><h2>Developer & support</h2><div className="setting-line"><span>Developer</span><b>Md Mahmudur Rahman</b></div><div className="setting-line"><span>Support</span><a href="mailto:rahman.shuvo95@gmail.com" style={{overflowWrap:"anywhere",textAlign:"right"}}>rahman.shuvo95@gmail.com</a></div></section><section className="panel settings-panel"><h2>Keep it close</h2><p>On iPhone, open this app in Safari, tap Share, then Add to Home Screen. On Android or desktop, use your browser’s Install app option.</p><p className="muted">An internet connection is needed to load and save your data. Transfer entries move money between accounts without counting as income or expenses.</p></section></>}
