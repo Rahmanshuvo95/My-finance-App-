@@ -21,7 +21,7 @@ export function LoanPanel({account,transactions,balance,onBack,onEdit,onOpen,onT
   <div className="panel loan-activity">{[...rows].sort((a,b)=>b.transaction_date.localeCompare(a.transaction_date)||(b.created_at||'').localeCompare(a.created_at||'')).map(t=><button className="loan-entry" key={t.id} onClick={()=>onTransaction(t)}><span><strong>{loanLabel(t)}</strong><small>{t.transaction_date} · {t.type==='transfer'?`${accountName(t.account_id)} → ${accountName(t.transfer_account_id)}`:'Previous balance · no cash movement'}{loanNote(t)?' · '+loanNote(t):''}</small></span><b>{money(t.amount)}</b></button>)}{!rows.length&&<p className="muted">Your loan activity will appear here.</p>}</div>
  </section>;
 }
-export function LoanFields({item,accounts,transactions,values}) {
+export function LoanFields({item,accounts,transactions,values,AccountPicker}) {
  const loan=accounts.find(a=>a.id===item.loan_id),rec=loan.type==='receivable',s=loanSummary(loan,transactions,values[loan.id]);
  const action=item.action,isReturn=['collect','repay'].includes(action),people=isReturn?s.people.filter(p=>p.balance>0||p.name===item.person):s.people;
  return <>
@@ -30,7 +30,7 @@ export function LoanFields({item,accounts,transactions,values}) {
  <label>Person{isReturn?<select name="person" defaultValue={item.person||''} required><option value="" disabled>Choose a person</option>{people.map(p=><option key={p.key} value={p.name}>{p.name} — {money(p.balance)}</option>)}</select>:<input name="person" list="loan-people" required maxLength="80" placeholder="Person name (use a distinct name for each person)" defaultValue={item.person||''}/>}</label>
  <datalist id="loan-people">{people.map(p=><option key={p.key} value={p.name}/>)}</datalist>
  <label>Amount (BDT)<input name="amount" type="number" min="0.01" step="0.01" required defaultValue={item.amount||''}/></label>
- {!['opening','allocate'].includes(action)&&<label>{['lend','repay'].includes(action)?'Pay from':'Receive into'}<select name="cash_id" required defaultValue={item.cash_id||''}><option value="" disabled>Choose cash, bank or mobile banking</option>{accounts.filter(a=>['cash','bank','mobile_banking'].includes(a.type)).map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>}
+ {!['opening','allocate'].includes(action)&&<div className="field-group"><span>{['lend','repay'].includes(action)?'Pay from':'Receive into'}</span><AccountPicker name="cash_id" accounts={accounts.filter(a=>['cash','bank','mobile_banking'].includes(a.type))} defaultValue={item.cash_id||''} placeholder="Choose cash, bank or mobile banking" ariaLabel={['lend','repay'].includes(action)?'Pay from account':'Receive into account'}/></div>}
  <label>Date<input name="transaction_date" type="date" required defaultValue={item.transaction_date}/></label>
  <label>Note (optional)<input name="note" maxLength="300" defaultValue={item.note||''}/></label>
  <p className="help-note">{action==='allocate'?'Assigns an existing unassigned balance to a person. Total balance, available funds and income/expenses stay unchanged.':action==='opening'?'Adds a previous balance for this person without changing cash or monthly income/expenses. Use only for amounts not already recorded in this account.':rec?'Lending reduces available funds. Returns increase funds only in the receiving account.':'Borrowing increases funds only in the receiving account. Repayment reduces funds.'}</p>
