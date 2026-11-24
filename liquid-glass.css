@@ -124,3 +124,25 @@ input,select,.filters input,.filters select,.section-heading input,.search{backg
 /* Match the available fund figure to the blue glass surface */
 :root[data-theme="light"] .net-card .fund-highlight{color:#2869bd;text-shadow:0 1px 0 #ffffff80}
 :root[data-theme="dark"] .net-card .fund-highlight{color:#a9d5ff;text-shadow:0 1px 18px #66b5ff30}
+
+
+/* Safe data reset and recent transaction deletion */
+.danger-zone{border-color:#e9a5b35e;background:linear-gradient(145deg,#fff9fae8,#fff2f3ba)}
+.danger-zone h2{color:#9d334b}
+.danger-zone>p{color:var(--muted)}
+.danger-button,.delete-transaction-button{min-height:42px;padding:10px 16px;border:1px solid #edb1b9;border-radius:14px;background:linear-gradient(145deg,#fff0f2,#ffe2e7);color:#a33349;font:inherit;font-size:.84rem;font-weight:650;cursor:pointer}
+.danger-button:hover,.delete-transaction-button:hover{background:#ffdde3}
+.danger-button:disabled,.delete-transaction-button:disabled{opacity:.55;cursor:not-allowed}
+.reset-form{margin-top:18px;padding-top:16px;border-top:1px solid #d8a4ab55}
+.reset-form label{margin:14px 0}
+.reset-count{padding:12px 14px;border-radius:13px;background:#fff0d7;color:#785119;font-size:.84rem;line-height:1.5}
+.reset-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:16px}
+.dialog-actions{flex-wrap:wrap}
+.delete-transaction-button{margin-right:auto}
+:root[data-theme="dark"] .danger-zone{border-color:#ff829b50;background:linear-gradient(145deg,#392b3bed,#2a2333e8)}
+:root[data-theme="dark"] .danger-zone h2{color:#ff9aab}
+:root[data-theme="dark"] .danger-button,:root[data-theme="dark"] .delete-transaction-button{border-color:#ff9aab45;background:linear-gradient(145deg,#542c3bed,#412432ed);color:#ffc0cb}
+:root[data-theme="dark"] .danger-button:hover,:root[data-theme="dark"] .delete-transaction-button:hover{background:#613241}
+:root[data-theme="dark"] .reset-form{border-color:#ff9aab30}
+:root[data-theme="dark"] .reset-count{background:#4a3b23;color:#ffe7ad}
+@media(max-width:600px){.reset-actions{justify-content:stretch}.reset-actions button{flex:1}.dialog-actions .delete-transaction-button{margin-right:0;width:100%}}
