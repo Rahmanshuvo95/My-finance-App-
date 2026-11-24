@@ -42,6 +42,25 @@ function AccountLogo({account}) {
  const [failed,setFailed]=useState(false);
  return <span className={'account-card-logo '+(src&&!failed?'bank-logo':'color-logo')}>{src&&!failed?<img src={src} alt="" referrerPolicy="no-referrer" onError={()=>setFailed(true)}/>:<Icon name={account.type}/>}</span>;
 }
+function AccountPicker({accounts,name,value,defaultValue,onChange,placeholder='Select account',ariaLabel,allowAll=false}){
+ const [open,setOpen]=useState(false),[localValue,setLocalValue]=useState(defaultValue??'');
+ const pickerRef=useRef(null),selectedValue=value!==undefined?value:localValue;
+ const selected=accounts.find(account=>account.id===selectedValue);
+ useEffect(()=>{const outside=event=>{if(!pickerRef.current?.contains(event.target))setOpen(false);};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside);},[]);
+ function choose(next){if(value===undefined)setLocalValue(next);else onChange?.(next);setOpen(false);}
+ return <div className="account-picker" ref={pickerRef}>
+  {name&&<input type="hidden" name={name} value={selectedValue==='all'?'':selectedValue||''}/>}
+  <button type="button" className="account-picker-trigger" aria-label={ariaLabel||selected?.name||placeholder} aria-haspopup="listbox" aria-expanded={open} onClick={()=>setOpen(current=>!current)} onKeyDown={event=>{if(event.key==='Escape')setOpen(false);}}>
+   {selected?<AccountLogo account={selected}/>:<span className="account-picker-generic"><Icon name="accounts"/></span>}
+   <span className="account-picker-value">{selected?.name||(selectedValue==='all'?'All accounts':placeholder)}</span><span className="account-picker-caret" aria-hidden="true">⌄</span>
+  </button>
+  {open&&<div className="account-picker-menu" role="listbox" aria-label={ariaLabel||'Choose an account'}>
+   {allowAll&&<button type="button" className={'account-picker-option '+(selectedValue==='all'?'selected':'')} role="option" aria-selected={selectedValue==='all'} onClick={()=>choose('all')}><span className="account-picker-generic"><Icon name="accounts"/></span><span>All accounts</span></button>}
+   {accounts.map(account=><button type="button" key={account.id} className={'account-picker-option '+(account.id===selectedValue?'selected':'')} role="option" aria-selected={account.id===selectedValue} onClick={()=>choose(account.id)}><AccountLogo account={account}/><span className="account-picker-value">{account.name}</span></button>)}
+   {!accounts.length&&<p className="account-picker-empty">No accounts yet.</p>}
+  </div>}
+ </div>;
+}
 function App(){
  const [theme,setTheme]=useState(()=>{try{return localStorage.getItem('ift-theme')==='dark'?'dark':'light';}catch{return 'light';}});
  useEffect(()=>{document.documentElement.dataset.theme=theme;try{localStorage.setItem('ift-theme',theme);}catch{}},[theme]);
