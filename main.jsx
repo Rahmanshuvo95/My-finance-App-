@@ -329,6 +329,14 @@ function Auth({error,setError}){
  }catch(e){setError(e.message||'Could not sign in. Please try again.');}finally{setBusy(false);}}
  return <main className="auth-shell"><section className="auth-story"><a className="brand" href="/"><span className="brand-mark"><img src={iftLogo} alt="IFT"/></span><span>Instant Financial<br/><b>Tracker</b></span></a><div><p className="eyebrow">A LITTLE MORE CLARITY</p><h1>My money,<br/><em>simply.</em></h1><p>Less keeping track.<br/>More feeling in control.</p><div className="auth-orbit" aria-hidden="true">✳</div></div><small>Made for your everyday.</small></section><section className="auth-main"><div className="auth-card"><span className="auth-greeting">Welcome to your money space</span><h2>{mode==='login'?'Good to see you.':'A fresh start.'}</h2><p className="muted">{mode==='login'?'Sign in to pick up where you left off.':'One account. All your money in one place.'}</p><div className="auth-tabs"><button className={mode==='login'?'active':''} onClick={()=>{setMode('login');setError('');setMessage('');}}>Sign in</button><button className={mode==='signup'?'active':''} onClick={()=>{setMode('signup');setError('');setMessage('');}}>Create account</button></div>{error&&<div className="alert" role="alert">{error}</div>}{message&&<div className="success" role="status">{message}</div>}<form onSubmit={submit}><label>Email<input type="email" name="email" required autoComplete="email" placeholder="you@example.com"/></label><label>Password<input type="password" name="password" required minLength={mode==='signup'?8:1} autoComplete={mode==='signup'?'new-password':'current-password'} placeholder={mode==='signup'?'At least 8 characters':'Your password'}/></label><button className="primary full-width" disabled={busy}>{busy?'Please wait…':mode==='login'?'Sign in':'Create account'}</button></form><a className="demo-link" href="/?demo=1">Take a look around the demo</a><div className="privacy-note"><Icon name="lock"/><span>Your data belongs to you.<br/>Private, and synced across your devices.</span></div></div><span className="auth-bottom">Simple by design. Personal by nature.</span></section></main>;
 }
-createRoot(document.getElementById('root')).render(<App/>);
+
+class AppBoundary extends React.Component {
+ constructor(props){super(props);this.state={failed:false};}
+ static getDerivedStateFromError(){return {failed:true};}
+ componentDidMount(){window.dispatchEvent(new Event('ift:ready'));}
+ render(){return this.state.failed?<main style={{fontFamily:'system-ui',maxWidth:480,margin:'12vh auto',padding:28,lineHeight:1.6}}><h1>IFT could not open</h1><p>Your saved financial records have not been changed. Reload the app, or repair its loading files.</p><p><a href="/recover.html">Repair loading</a></p><button onClick={()=>location.reload()}>Reload app</button></main>:this.props.children;}
+}
+
+createRoot(document.getElementById('root')).render(<AppBoundary><App/></AppBoundary>);
 if('serviceWorker' in navigator&&import.meta.env.PROD)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 
