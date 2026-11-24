@@ -8,7 +8,7 @@ export default defineConfig({
  workers:2,
  retries:0,
  reporter:[['list'],['html',{open:'never'}]],
- use:{...phone,browserName:'webkit',locale:'en-GB',timezoneId:'Asia/Dhaka',serviceWorkers:'allow',trace:'retain-on-failure',screenshot:'only-on-failure'},
+ use:{...phone,browserName:'webkit',locale:'en-GB',timezoneId:'Asia/Dhaka',serviceWorkers:'allow',actionTimeout:15000,trace:'retain-on-failure',screenshot:'only-on-failure'},
  projects:[
   {name:'local-iPhone-390',use:{baseURL:'http://127.0.0.1:4173',viewport:{width:390,height:844},screen:{width:390,height:844}}},
   {name:'local-iPhone-440',use:{baseURL:'http://127.0.0.1:4173',viewport:{width:440,height:956},screen:{width:440,height:956}}},

@@ -1,5 +1,9 @@
 import {test,expect} from '@playwright/test';
-async function noOverflow(page){expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
+async function noOverflow(page){
+ if(await page.locator('main.main').count())await expect(page.locator('main.main')).toHaveCSS('opacity','1');
+ const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.right>innerWidth+1||r.left< -1)&&getComputedStyle(e).position!=='fixed';}).slice(0,12).map(e=>({tag:e.tagName,cls:e.className,right:e.getBoundingClientRect().right}))}));
+ expect(dimensions.scroll,JSON.stringify(dimensions)).toBeLessThanOrEqual(dimensions.width+1);
+}
 async function shot(page,testInfo,name){await page.screenshot({path:testInfo.outputPath(name+'.png'),fullPage:true});}
 const errors=new WeakMap();
 test.beforeEach(async({page})=>{const list=[];errors.set(page,list);page.on('pageerror',error=>list.push(error.message));});
@@ -22,8 +26,8 @@ test('demo loan return and repayment update funds correctly',async({page},info)=
  await noOverflow(page);await shot(page,info,'iphone-receivable');
  await page.getByRole('button',{name:'Record return',exact:true}).click();
  const dialog=page.getByRole('dialog',{name:'Record return',exact:true});
- await dialog.getByLabel('Person',{exact:true}).selectOption('Rahim');
- await dialog.getByLabel('Amount (BDT)',{exact:true}).fill('1000');
+ await dialog.getByRole('combobox',{name:'Person',exact:true}).selectOption('Rahim');
+ await dialog.getByRole('spinbutton',{name:'Amount (BDT)',exact:true}).fill('1000');
  await dialog.getByRole('button',{name:'Receive into account',exact:true}).click();
  await dialog.getByRole('option',{name:'bKash',exact:true}).click();
  await dialog.getByRole('button',{name:'Save entry',exact:true}).click();
@@ -32,8 +36,8 @@ test('demo loan return and repayment update funds correctly',async({page},info)=
  await page.getByRole('button',{name:'Open ledger for Loan Payable',exact:true}).click();
  await page.getByRole('button',{name:'Repay money',exact:true}).click();
  const repay=page.getByRole('dialog',{name:'Repay money',exact:true});
- await repay.getByLabel('Person',{exact:true}).selectOption('Hasan');
- await repay.getByLabel('Amount (BDT)',{exact:true}).fill('2000');
+ await repay.getByRole('combobox',{name:'Person',exact:true}).selectOption('Hasan');
+ await repay.getByRole('spinbutton',{name:'Amount (BDT)',exact:true}).fill('2000');
  await repay.getByRole('button',{name:'Pay from account',exact:true}).click();
  await repay.getByRole('option',{name:'City Bank',exact:true}).click();
  await repay.getByRole('button',{name:'Save entry',exact:true}).click();
