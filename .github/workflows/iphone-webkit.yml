@@ -24,7 +24,7 @@ jobs:
       - name: Install application and test dependencies
         run: npm install --no-save --package-lock=false @playwright/test@1.56.1
       - name: Install Safari engine dependencies
-        run: npx playwright install --with-deps webkit
+        run: npx playwright install --with-deps webkit chromium
       - name: Accounting and PWA tests
         run: npm test
       - name: Build production application

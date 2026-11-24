@@ -45,7 +45,8 @@ test('demo loan return and repayment update funds correctly',async({page},info)=
  await expect(page.locator('.summary-grid')).toContainText('27,400.00');
  await shot(page,info,'iphone-home');
 });
-test('app shell reloads while offline after a complete initial install',async({page,context},info)=>{
+test('app shell reloads while offline after a complete initial install',async({page,context,browserName},info)=>{
+ test.skip(browserName==='webkit','Playwright service-worker testing is supported only on Chromium. Physical iPhone offline behavior is not certified by this test.');
  await page.goto('/?demo=1',{waitUntil:'domcontentloaded'});
  await expect(page.getByRole('heading',{name:'Home',exact:true})).toBeVisible();
  await expect.poll(()=>page.evaluate(async()=>{
