@@ -1,4 +1,6 @@
 import {test,expect} from '@playwright/test';
+// Keep authenticated fixtures isolated from the app-shell worker's own fetches.
+test.use({serviceWorkers:'block'});
 const USER='6abf01d2-4c45-4c3f-87f9-e4cdbd38c15c';
 const SESSION='0c1bf786-96b0-4906-91dd-7b765ec114d4';
 const PIN='493827',TOKEN='c'.repeat(64);
@@ -7,7 +9,7 @@ async function backend(page,enabled=true){
  const user={id:USER,aud:'authenticated',role:'authenticated',email:'pin-qa@example.invalid',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email',providers:['email']},user_metadata:{},identities:[],created_at:new Date().toISOString()};
  function session(){const now=Math.floor(Date.now()/1000);const body={sub:USER,role:'authenticated',aud:'authenticated',exp:now+3600,iat:now,session_id:SESSION,amr:[{method:'password',timestamp:now}]};const token=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url')+'.'+Buffer.from(JSON.stringify(body)).toString('base64url')+'.qa-signature';return {access_token:token,refresh_token:'qa-refresh-token',token_type:'bearer',expires_in:3600,expires_at:now+3600,user};}
  const success=()=>({enabled,locked:false,token:TOKEN,expires_at:new Date(Date.now()+900000).toISOString()});
- await page.route('https://*.supabase.co/**',async route=>{
+ await page.context().route(url=>url.hostname.endsWith('.supabase.co'),async route=>{
   const request=route.request(),url=new URL(request.url()),data=request.postDataJSON()||{};
   const send=(value,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(value)});
   if(url.pathname.startsWith('/auth/v1/token'))return send(session());
