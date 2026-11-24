@@ -338,5 +338,5 @@ class AppBoundary extends React.Component {
 }
 
 createRoot(document.getElementById('root')).render(<AppBoundary><App/></AppBoundary>);
-if('serviceWorker' in navigator&&import.meta.env.PROD)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+if('serviceWorker' in navigator&&import.meta.env.PROD){const register=()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});if(document.readyState==='complete')register();else window.addEventListener('load',register,{once:true});}
 
