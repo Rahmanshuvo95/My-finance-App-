@@ -67,6 +67,8 @@ function billingDateLabel(value){return value?new Date(value+'T12:00:00').toLoca
 function daysUntilDate(value){if(!value)return null;const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12),target=new Date(value+'T12:00:00');return Math.round((target-today)/86400000);}
 function dueStatusLabel(days){if(days===0)return 'due today';if(days>0)return 'due in '+days+' day'+(days===1?'':'s');const overdue=Math.abs(days);return overdue+' day'+(overdue===1?'':'s')+' overdue';}
 function App(){
+ const [online,setOnline]=useState(()=>navigator.onLine);
+ useEffect(()=>{const update=()=>setOnline(navigator.onLine);window.addEventListener('online',update);window.addEventListener('offline',update);return()=>{window.removeEventListener('online',update);window.removeEventListener('offline',update);};},[]);
  const [theme,setTheme]=useState(()=>{try{return localStorage.getItem('ift-theme')==='dark'?'dark':'light';}catch{return 'light';}});
  useEffect(()=>{document.documentElement.dataset.theme=theme;try{localStorage.setItem('ift-theme',theme);}catch{}},[theme]);
  const [soundEnabled,setSoundEnabled]=useState(()=>{try{return localStorage.getItem('ift-sound')!=='off';}catch{return true;}});
@@ -144,7 +146,7 @@ function App(){
  function close(){if(!saveRef.current) dismissModal();}
  useEffect(()=>()=>clearTimeout(closeTimer.current),[]);
  async function save(e){
-  e.preventDefault();if(saveRef.current||closing)return;
+  e.preventDefault();if(!navigator.onLine&&!demo){setError('Reconnect before saving. No changes have been submitted.');return;}if(saveRef.current||closing)return;
   saveRef.current=true;setSaving(true);setError('');
   const f=Object.fromEntries(new FormData(e.currentTarget)),existing=modal.item?.id?modal.item:null;
   try{
@@ -250,10 +252,12 @@ function App(){
   <main className="main" key={view}>
    {demo&&<div className="demo-banner">Demo preview · sample accounts · changes are temporary <a href="/">Sign in</a></div>}
    <header className="page-header"><div><div className="header-brand"><img src={iftLogo} alt="IFT"/><p className="eyebrow">INSTANT FINANCIAL TRACKER</p></div><h1>{({home:'Home',accounts:'All your accounts.',activity:'Every little detail.',settings:'Make yourself at home.',ledger:accountName(selectedAccountId)})[view]}</h1><p className="subtitle">{({home:'Your everyday money, in one calm place.',accounts:'Cash, cards, savings and everything in between.',activity:'Know what came in and where it went.',settings:'A simple space. Entirely yours.',ledger:'Account ledger'})[view]}</p></div><div className="header-actions"><button className="icon-button refresh" onClick={load} disabled={loading||demo} aria-label="Refresh accounts"><Icon name="refresh" className={loading?'spinning':''}/></button><a className="help-link" href="mailto:rahman.shuvo95@gmail.com" aria-label="Help and support"><Icon name="help"/><span>Help</span></a><div className="profile-area" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setProfileMenuOpen(false);}}><button type="button" className="profile-trigger" aria-label="Open profile menu" aria-expanded={profileMenuOpen} onClick={()=>setProfileMenuOpen(value=>!value)}><span className="profile-avatar">{avatarUrl?<img src={avatarUrl} alt="Profile"/>:initials}</span><span className="profile-trigger-name">{displayName}</span><span className="profile-caret" aria-hidden="true">⌄</span></button>{profileMenuOpen&&<div className="profile-menu"><div className="profile-menu-identity"><span className="profile-avatar large">{avatarUrl?<img src={avatarUrl} alt="Profile"/>:initials}</span><span className="profile-identity-text"><span className="profile-identity-heading"><strong>{displayName}</strong></span><small>{demo?'Sample data · temporary':session?.user.email}</small></span></div><button type="button" className="profile-menu-item" onClick={()=>{setView('settings');setProfileMenuOpen(false);}}><Icon name="settings"/><span><strong>App Settings</strong><small>Appearance and preferences</small></span></button><div className="profile-menu-divider"/><button type="button" className="profile-menu-item logout" onClick={signOut}><Icon name="close"/><span><strong>Log out</strong></span></button></div>}</div></div></header>
+   {!online&&<div className="alert" role="status">You are offline. Reconnect to load and save your financial records. Displayed balances may be from your last refresh.</div>}
    {error&&!modal&&<div role="alert" className="alert">{error}<button onClick={load}>Try again</button></div>}
    {notice&&<div className="toast" role="status"><Icon name="check"/>{notice}</div>}
+   {error&&!modal&&!accounts.length&&view==='home'&&<section className="panel"><h2>Your balances could not be loaded</h2><p>Reconnect and tap Refresh. Your saved accounts have not been reset.</p></section>}
    {loading&&!accounts.length&&<p role="status" className="muted">Loading your accounts…</p>}
-   {view==='home'&&<>
+   {view==='home'&&(!error||accounts.length>0)&&<>
     <section className="net-card"><div><span className="card-label">Available fund to use</span><h2 className="fund-highlight">{money(funds.available)}</h2><p>Cash, bank and mobile banking balances.</p></div><div className="net-footer"><span>Credit card outstanding <b className="negative">{money(funds.cards)}</b></span><span>Other liabilities <b className="negative">{money(funds.otherDebt)}</b></span></div></section>
     {upcomingCardPayment&&<section className="upcoming-card-payment panel"><span className="upcoming-card-icon"><Icon name="credit_card"/></span><div><small>Upcoming card payment</small><strong>{money(Number(upcomingCardPayment.statement_due_amount))}</strong><p>{upcomingCardPayment.name} · {billingDateLabel(upcomingCardPayment.next_payment_due_date)} · {dueStatusLabel(upcomingCardPayment.daysUntilDue)}</p></div></section>}
     <div className="section-heading"><h2>This month</h2><input type="month" aria-label="Summary month" value={month} onChange={e=>setMonth(e.target.value)}/></div>
@@ -338,5 +342,5 @@ class AppBoundary extends React.Component {
 }
 
 createRoot(document.getElementById('root')).render(<AppBoundary><App/></AppBoundary>);
-if('serviceWorker' in navigator&&import.meta.env.PROD){const register=()=>navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{});if(document.readyState==='complete')register();else window.addEventListener('load',register,{once:true});}
+
 
