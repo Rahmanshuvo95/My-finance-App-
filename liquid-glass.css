@@ -181,3 +181,11 @@ input,select,.filters input,.filters select,.section-heading input,.search{backg
 .activity-filters .secondary{width:auto;margin:0;white-space:nowrap}
 @media(max-width:980px){.activity-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.activity-filters .secondary{width:100%;justify-content:center}}
 @media(max-width:760px){.activity-toolbar{gap:8px;margin:16px 0 12px}.activity-toolbar .primary{padding:10px 12px;font-size:.8rem}.activity-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.activity-filters .account-picker{grid-column:1/-1}.activity-filters .secondary{grid-column:1/-1}}
+
+/* Keep profile controls inside narrow iPhone viewports. */
+@media(max-width:480px){
+ .page-header{flex-wrap:wrap;gap:12px}
+ .page-header>div:first-child{flex:1 1 100%;min-width:0}
+ .page-header h1{overflow-wrap:anywhere}
+ .header-actions{margin-left:auto;max-width:100%}
+}
