@@ -146,3 +146,38 @@ input,select,.filters input,.filters select,.section-heading input,.search{backg
 :root[data-theme="dark"] .reset-form{border-color:#ff9aab30}
 :root[data-theme="dark"] .reset-count{background:#4a3b23;color:#ffe7ad}
 @media(max-width:600px){.reset-actions{justify-content:stretch}.reset-actions button{flex:1}.dialog-actions .delete-transaction-button{margin-right:0;width:100%}}
+
+
+/* Account pickers: keep bank marks visible for every transaction type */
+.field-group{display:grid;gap:8px;margin-bottom:18px;font-size:.875rem;font-weight:500}
+.account-picker{position:relative;width:100%;min-width:0;color:var(--ink)}
+.account-picker-trigger{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;padding:6px 12px;border:1px solid #b7c9e16b;border-radius:14px;background:#ffffff94;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.account-picker-trigger:hover{background:#ffffffc9;border-color:#83a9db99}
+.account-picker-value{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-picker .account-card-logo{width:36px;height:36px;border-radius:11px;flex:0 0 36px}
+.account-picker .account-card-logo.color-logo{width:36px}
+.account-picker .account-card-logo svg{width:21px;height:21px}
+.account-picker-generic{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border:1px solid #ffffffc7;border-radius:11px;background:linear-gradient(145deg,#e8f1ff,#ddeaff);color:#477cb6}
+.account-picker-caret{margin-left:auto;color:var(--muted);font-size:1rem;line-height:1}
+.account-picker-menu{position:absolute;z-index:80;top:calc(100% + 7px);left:0;right:0;max-height:min(300px,42dvh);overflow-y:auto;padding:6px;border:1px solid #ffffffd9;border-radius:18px;background:linear-gradient(145deg,#ffffffed,#edf4ffed);box-shadow:inset 0 1px 0 white,0 16px 36px #1e3d6526;backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%)}
+.account-picker-option{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:8px 9px;border:1px solid transparent;border-radius:13px;background:transparent;color:var(--ink);text-align:left;font:inherit;font-size:.85rem;cursor:pointer}
+.account-picker-option:hover,.account-picker-option.selected{background:#dceaff8c;border-color:#c8dcf38c}
+.account-picker-empty{padding:10px;color:var(--muted);font-size:.82rem}
+.account-picker-trigger:focus-visible,.account-picker-option:focus-visible{outline:3px solid #007aff80;outline-offset:2px}
+:root[data-theme="dark"] .account-picker-trigger{background:#111d2dcc;border-color:#9db7d23b;color:var(--ink)}
+:root[data-theme="dark"] .account-picker-trigger:hover{background:#1b2d46;border-color:#96b9e866}
+:root[data-theme="dark"] .account-picker-menu{background:linear-gradient(145deg,#25344aef,#182538f5);border-color:#d2e4ff37}
+:root[data-theme="dark"] .account-picker-option{color:var(--ink)}
+:root[data-theme="dark"] .account-picker-option:hover,:root[data-theme="dark"] .account-picker-option.selected{background:#72b6ff20;border-color:#72b6ff35}
+:root[data-theme="dark"] .account-picker-generic{background:linear-gradient(145deg,#334c6b,#263a54);border-color:#c6ddff20;color:#b8d8ff}
+
+/* Activity toolbar and filters remain aligned on desktop and mobile */
+.activity-toolbar{display:flex;align-items:center;gap:12px;margin:18px 0 14px}
+.activity-toolbar .search{max-width:none;flex:1;min-width:0}
+.activity-toolbar .primary{white-space:nowrap;flex-shrink:0}
+.activity-filters{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(140px,.8fr) minmax(200px,1.2fr) auto;align-items:center;gap:10px;margin-bottom:18px}
+.activity-filters>input,.activity-filters>select{width:100%;min-width:0;height:48px}
+.activity-filters>.account-picker{min-width:0}
+.activity-filters .secondary{width:auto;margin:0;white-space:nowrap}
+@media(max-width:980px){.activity-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.activity-filters .secondary{width:100%;justify-content:center}}
+@media(max-width:760px){.activity-toolbar{gap:8px;margin:16px 0 12px}.activity-toolbar .primary{padding:10px 12px;font-size:.8rem}.activity-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.activity-filters .account-picker{grid-column:1/-1}.activity-filters .secondary{grid-column:1/-1}}
