@@ -51,7 +51,8 @@ function App(){
  const [selectedAccountId,setSelectedAccountId]=useState(null),[closing,setClosing]=useState(false);
  const closeTimer=useRef(null);
  const [accounts,setAccounts]=useState([]),[transactions,setTransactions]=useState([]),[loading,setLoading]=useState(false);
- const [error,setError]=useState(''),[notice,setNotice]=useState(''),[modal,setModal]=useState(null),[saving,setSaving]=useState(false),[deleting,setDeleting]=useState(false);\n const [resetOpen,setResetOpen]=useState(false),[resetPhrase,setResetPhrase]=useState(''),[resetPassword,setResetPassword]=useState(''),[resetBusy,setResetBusy]=useState(false);
+ const [error,setError]=useState(''),[notice,setNotice]=useState(''),[modal,setModal]=useState(null),[saving,setSaving]=useState(false),[deleting,setDeleting]=useState(false);
+ const [resetOpen,setResetOpen]=useState(false),[resetPhrase,setResetPhrase]=useState(''),[resetPassword,setResetPassword]=useState(''),[resetBusy,setResetBusy]=useState(false);
  const [month,setMonth]=useState(today().slice(0,7)),[search,setSearch]=useState(''),[filter,setFilter]=useState('all'),[accountFilter,setAccountFilter]=useState('all');
  const sessionRef=useRef(null),requestRef=useRef(0),saveRef=useRef(false),dialogRef=useRef(null),previousFocus=useRef(null);
  const authenticated=demo||!!session;
