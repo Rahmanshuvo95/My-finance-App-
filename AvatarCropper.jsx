@@ -57,7 +57,7 @@ export default function AvatarCropper({ file, busy, error = '', onCancel, onSave
     if (!context) { setReadError('Photo editing is unavailable in this browser.'); return; }
     context.imageSmoothingQuality = 'high';
     context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 512, 512);
-    canvas.toBlob(blob => { if (!blob) setReadError('Could not prepare this image. Try another one.'); else if (blob.type !== 'image/webp') setReadError('This browser cannot export WebP. Update your browser and try again.'); else onSave(blob); }, 'image/webp', 0.88);
+    canvas.toBlob(blob => { if (blob?.type === 'image/webp') { onSave(blob); return; } canvas.toBlob(jpeg => jpeg?.type === 'image/jpeg' ? onSave(jpeg) : setReadError('Could not prepare this image. Try another one.'), 'image/jpeg', 0.88); }, 'image/webp', 0.88);
   }
 
   return <div className="avatar-crop-backdrop" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onCancel(); }}>
@@ -71,7 +71,7 @@ export default function AvatarCropper({ file, busy, error = '', onCancel, onSave
       </div>
       <label className="avatar-zoom-control">Zoom<input type="range" min="1" max="3" step="0.01" value={zoom} onChange={changeZoom} disabled={!image||busy}/></label>
       {(readError||error)&&<p className="alert avatar-crop-error" role="alert">{error||readError}</p>}
-      <p className="avatar-crop-output">Saved as a private 512 × 512 WebP image.</p>
+      <p className="avatar-crop-output">Saved privately as 512 × 512 WebP, with JPEG fallback for older browsers.</p>
       <div className="avatar-crop-actions"><button type="button" className="secondary" onClick={onCancel} disabled={busy}>Cancel</button><button type="button" className="primary" onClick={saveCrop} disabled={!image||busy}>{busy?'Uploading…':'Use this photo'}</button></div>
     </section>
   </div>;
