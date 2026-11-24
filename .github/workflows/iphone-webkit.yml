@@ -1,0 +1,42 @@
+name: iPhone WebKit checks
+on:
+  pull_request:
+    paths:
+      - '**.js'
+      - '**.jsx'
+      - '**.mjs'
+      - '**.css'
+      - '**.html'
+      - 'package.json'
+      - '.github/workflows/iphone-webkit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  iphone-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install application and test dependencies
+        run: npm install --no-save --package-lock=false @playwright/test@1.56.1
+      - name: Install Safari engine dependencies
+        run: npx playwright install --with-deps webkit
+      - name: Accounting and PWA tests
+        run: npm test
+      - name: Build production application
+        run: npm run build
+      - name: Test iPhone-size WebKit and live site
+        run: npx playwright test --config playwright.iphone.config.mjs
+      - name: Preserve test report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iphone-webkit-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
