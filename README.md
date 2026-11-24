@@ -20,6 +20,8 @@ Run `npm run build` for production; Vercel detects Vite automatically.
 
 Run `schema.sql` in the project's SQL editor. This upgrades the original two-table schema without deleting financial records. A transfer stores one row with source and destination, so both balances change together. An existing transfer with no destination stops the migration rather than guessing where its money went.
 
+To enable profile photos, run `avatar-storage.sql` once in the Supabase SQL Editor. It creates a private `ift-avatars` bucket and limits each user to their own photo folder.
+
 `config.js` contains only the project's public browser URL and publishable key. Never add a secret/service-role key. Optional Vercel environment variables: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
 Set Supabase Authentication → URL Configuration → Site URL to the deployed URL. Email confirmation remains enabled. Each user creates their own account and confirms their email.
