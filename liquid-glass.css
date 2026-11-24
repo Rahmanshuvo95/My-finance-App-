@@ -119,3 +119,8 @@ input,select,.filters input,.filters select,.section-heading input,.search{backg
 :root[data-theme="dark"] .profile-trigger-name{color:var(--ink)}
 @media(max-width:760px){.profile-trigger{max-width:min(220px,48vw);gap:6px}.profile-trigger-name{max-width:110px;font-size:.74rem}.profile-caret{padding-left:1px;padding-right:2px}}
 @media(max-width:380px){.profile-trigger-name{max-width:76px}}
+
+
+/* Match the available fund figure to the blue glass surface */
+:root[data-theme="light"] .net-card .fund-highlight{color:#2869bd;text-shadow:0 1px 0 #ffffff80}
+:root[data-theme="dark"] .net-card .fund-highlight{color:#a9d5ff;text-shadow:0 1px 18px #66b5ff30}
