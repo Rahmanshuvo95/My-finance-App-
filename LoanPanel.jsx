@@ -36,4 +36,4 @@ export function LoanFields({item,accounts,transactions,values}) {
  <p className="help-note">{action==='allocate'?'Assigns an existing unassigned balance to a person. Total balance, available funds and income/expenses stay unchanged.':action==='opening'?'Adds a previous balance for this person without changing cash or monthly income/expenses. Use only for amounts not already recorded in this account.':rec?'Lending reduces available funds. Returns increase funds only in the receiving account.':'Borrowing increases funds only in the receiving account. Repayment reduces funds.'}</p>
  </>;
 }
-export function loanEditItem(row) {const m=loanMeta(row);return {id:row.id,loan_id:m.loanId,action:m.action,person:m.person,amount:row.amount,cash_id:row.account_id===m.loanId?row.transfer_account_id:row.account_id,transaction_date:row.transaction_date,note:loanNote(row)};}
+export function loanEditItem(row) {const m=loanMeta(row);return {id:row.id,created_at:row.created_at,loan_id:m.loanId,action:m.action,person:m.person,amount:row.amount,cash_id:row.account_id===m.loanId?row.transfer_account_id:row.account_id,transaction_date:row.transaction_date,note:loanNote(row)};}
