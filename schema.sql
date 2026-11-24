@@ -24,6 +24,10 @@ alter table public.transactions add constraint transactions_transfer_check check
 );
 alter table public.accounts enable row level security;
 alter table public.accounts add column if not exists credit_limit numeric(16,2) check (credit_limit >= 0);
+alter table public.accounts add column if not exists last_billing_date date;
+alter table public.accounts add column if not exists next_cycle_end_date date;
+alter table public.accounts add column if not exists next_payment_due_date date;
+alter table public.accounts add column if not exists statement_due_amount numeric(16,2) not null default 0 check (statement_due_amount >= 0);
 grant select, insert, update on public.accounts, public.transactions to authenticated;
 alter table public.transactions enable row level security;
 drop policy if exists "Own accounts" on public.accounts;

@@ -63,6 +63,9 @@ function AccountPicker({accounts,name,value,defaultValue,onChange,placeholder='S
   </div>}
  </div>;
 }
+function billingDateLabel(value){return value?new Date(value+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';}
+function daysUntilDate(value){if(!value)return null;const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12),target=new Date(value+'T12:00:00');return Math.round((target-today)/86400000);}
+function dueStatusLabel(days){if(days===0)return 'due today';if(days>0)return 'due in '+days+' day'+(days===1?'':'s');const overdue=Math.abs(days);return overdue+' day'+(overdue===1?'':'s')+' overdue';}
 function App(){
  const [theme,setTheme]=useState(()=>{try{return localStorage.getItem('ift-theme')==='dark'?'dark':'light';}catch{return 'light';}});
  useEffect(()=>{document.documentElement.dataset.theme=theme;try{localStorage.setItem('ift-theme',theme);}catch{}},[theme]);
@@ -115,6 +118,8 @@ function App(){
   const homeInsight=summary.income||summary.expense?(summary.income>summary.expense?`You are ${money(summary.income-summary.expense)} ahead this month.`:summary.expense>summary.income?`Spending is ${money(summary.expense-summary.income)} above income this month.`:'Income and spending are balanced this month.'):'Add a transaction to see your monthly money trend.';
   const liquidAccounts=accounts.filter(a=>['cash','bank','mobile_banking'].includes(a.type)).map(a=>({name:a.name,balance:values[a.id]||0})).sort((a,b)=>b.balance-a.balance);
   const accountsInsight=liquidAccounts[0]?.balance>0?`${liquidAccounts[0].name} holds your largest available balance: ${money(liquidAccounts[0].balance)}.`:accounts.length?`Available funds across cash, bank and mobile accounts: ${money(funds.available)}.`:'Add an account to start seeing where your money is held.';
+  const cardPayments=accounts.filter(a=>a.type==='credit_card'&&a.next_payment_due_date&&Number(a.statement_due_amount)>0).map(a=>({...a,daysUntilDue:daysUntilDate(a.next_payment_due_date)}));
+  const upcomingCardPayment=cardPayments.filter(a=>a.daysUntilDue>=0).sort((a,b)=>a.daysUntilDue-b.daysUntilDue)[0]||cardPayments.filter(a=>a.daysUntilDue<0).sort((a,b)=>b.daysUntilDue-a.daysUntilDue)[0]||null;
   const activityInsight=categories.length?`Your top expense category this month is ${categories[0][0]} (${money(categories[0][1]/100)}).`:monthRecords.length?`${monthRecords.length} transactions logged this month; no expenses recorded yet.`:'No transactions recorded this month yet.';
  function open(kind,item){
   if(kind==='transaction'&&item?.type==='transfer'&&!loanMeta(item)){
@@ -151,6 +156,12 @@ function App(){
     payload={name:f.name.trim(),type:f.type,opening_balance:cents(f.opening_balance||'0')/100,credit_limit:null};
     if(f.type==='credit_card') {
       Object.assign(payload, creditCardPayload(f.available_limit, f.outstanding, existing, values[existing?.id] || 0));
+      if(f.last_billing_date&&f.next_cycle_end_date&&f.next_cycle_end_date<=f.last_billing_date)throw new Error('The next cycle end must be after the last billing date.');
+      if(f.last_billing_date&&f.next_payment_due_date&&f.next_payment_due_date<f.last_billing_date)throw new Error('The payment due date cannot be before the last billing date.');
+      if(Number(f.statement_due_amount||0)>0&&!f.next_payment_due_date)throw new Error('Add the payment due date for the statement amount.');
+      Object.assign(payload,{last_billing_date:f.last_billing_date||null,next_cycle_end_date:f.next_cycle_end_date||null,next_payment_due_date:f.next_payment_due_date||null,statement_due_amount:cents(f.statement_due_amount||'0')/100});
+    }else{
+      Object.assign(payload,{last_billing_date:null,next_cycle_end_date:null,next_payment_due_date:null,statement_due_amount:0});
     }
    }else{
     payload={type:f.type,account_id:f.account_id,transfer_account_id:f.type==='transfer'?f.transfer_account_id:null,amount:cents(f.amount)/100,category:f.type==='transfer'?'Transfer':(f.category.trim()||'Other'),note:f.note.trim(),transaction_date:existing?.transaction_date || today()};
@@ -179,11 +190,11 @@ function App(){
  }
  function accountList(){
   return accounts.length?<div className="account-cards" aria-label="Your accounts">{accounts.map(account=>{
-   const card=cardAmounts(account,values[account.id]),brand=accountBrand(account);
+   const card=cardAmounts(account,values[account.id]),brand=accountBrand(account),dueDays=daysUntilDate(account.next_payment_due_date);
    return <button type="button" className={'account-card brand-'+brand} key={account.id} aria-label={'Open ledger for '+account.name} onClick={()=>{setSelectedAccountId(account.id);setView('ledger');}}>
     <span className="account-card-top"><AccountLogo account={account}/><span className="account-card-arrow" aria-hidden="true">&#8599;</span></span>
     <span className="account-card-name">{account.name}</span><span className="account-card-type">{accountTypes[account.type]||account.type}</span>
-    <span className="account-card-balance">{account.type==='credit_card'?<><small>Available limit</small><strong>{card.available===null?'Not set':money(card.available)}</strong><small>Outstanding <b className="negative">{money(card.outstanding)}</b></small></>:<><small>{account.type==='loan'?'Outstanding payable':account.type==='receivable'?'Outstanding receivable':'Current balance'}</small><strong className={account.type==='receivable'?'positive':account.type==='loan'?'negative':values[account.id]<0?'negative':''}>{money(account.type==='loan'?-values[account.id]:values[account.id])}</strong></>}</span>
+    <span className="account-card-balance">{account.type==='credit_card'?<><small>Available limit</small><strong>{card.available===null?'Not set':money(card.available)}</strong><small>Outstanding <b className="negative">{money(card.outstanding)}</b></small>{account.next_payment_due_date&&Number(account.statement_due_amount)>0&&<small className={'account-billing-due '+(dueDays<0?'overdue':dueDays<=3?'soon':'')}><span>Statement due</span><b>{money(Number(account.statement_due_amount||0))}</b><span>{billingDateLabel(account.next_payment_due_date)} · {dueStatusLabel(dueDays)}</span></small>}{account.next_cycle_end_date&&<small className="account-cycle-date">Cycle ends {billingDateLabel(account.next_cycle_end_date)}</small>}</>:<><small>{account.type==='loan'?'Outstanding payable':account.type==='receivable'?'Outstanding receivable':'Current balance'}</small><strong className={account.type==='receivable'?'positive':account.type==='loan'?'negative':values[account.id]<0?'negative':''}>{money(account.type==='loan'?-values[account.id]:values[account.id])}</strong></>}</span>
     <span className="account-card-ledger">{isLoanAccount(account)?'People & ledger':'View ledger'} <span aria-hidden="true">&#8594;</span></span>
    </button>;
   })}</div>:<Empty title="Add your first account" text="Keep cash, bank accounts and cards together." button="Add account" onClick={()=>open('account')}/>;
@@ -244,6 +255,7 @@ function App(){
    {loading&&!accounts.length&&<p role="status" className="muted">Loading your accounts…</p>}
    {view==='home'&&<>
     <section className="net-card"><div><span className="card-label">Available fund to use</span><h2 className="fund-highlight">{money(funds.available)}</h2><p>Cash, bank and mobile banking balances.</p></div><div className="net-footer"><span>Credit card outstanding <b className="negative">{money(funds.cards)}</b></span><span>Other liabilities <b className="negative">{money(funds.otherDebt)}</b></span></div></section>
+    {upcomingCardPayment&&<section className="upcoming-card-payment panel"><span className="upcoming-card-icon"><Icon name="credit_card"/></span><div><small>Upcoming card payment</small><strong>{money(Number(upcomingCardPayment.statement_due_amount))}</strong><p>{upcomingCardPayment.name} · {billingDateLabel(upcomingCardPayment.next_payment_due_date)} · {dueStatusLabel(upcomingCardPayment.daysUntilDue)}</p></div></section>}
     <div className="section-heading"><h2>This month</h2><input type="month" aria-label="Summary month" value={month} onChange={e=>setMonth(e.target.value)}/></div>
     <div className="summary-grid"><section className="metric"><span className="transaction-icon income"><Icon name="income"/></span><p>Money in</p><h3>{money(summary.income)}</h3></section><section className="metric"><span className="transaction-icon expense"><Icon name="expense"/></span><p>Money out</p><h3>{money(summary.expense)}</h3></section><section className="metric difference"><p>Left this month</p><h3>{money(summary.income-summary.expense)}</h3><small>Income less expenses</small></section></div>
      <SmartInsight text={homeInsight}/><Insights transactions={transactions} month={month}/>
@@ -274,6 +286,12 @@ function AccountFields({item,balance}) {
   {type==='credit_card'?<>
    <label>Available limit (BDT)<input name="available_limit" type="number" min="0" step="0.01" placeholder="Current unused card limit" defaultValue={card.available??''} required/></label>
    <label>Outstanding amount (BDT)<input name="outstanding" type="number" min="0" step="0.01" defaultValue={card.outstanding} required/></label>
+   <div className="billing-fields-heading"><strong>Billing schedule</strong><span>Optional · helps track your next payment</span></div>
+   <label>Last billing / statement date<input name="last_billing_date" type="date" defaultValue={item?.last_billing_date||''}/></label>
+   <label>Next billing cycle end date<input name="next_cycle_end_date" type="date" min={item?.last_billing_date||undefined} defaultValue={item?.next_cycle_end_date||''}/></label>
+   <label>Payment due date<input name="next_payment_due_date" type="date" min={item?.last_billing_date||undefined} defaultValue={item?.next_payment_due_date||''}/></label>
+   <label>Statement amount due (BDT)<input name="statement_due_amount" type="number" min="0" step="0.01" placeholder="0.00" defaultValue={item?.statement_due_amount??'0'}/></label>
+   <p className="help-note">Enter the billed amount from your latest statement. It can differ from card outstanding because purchases after the billing date may not be due yet. Update these dates and amount when a new statement arrives.</p>
    <p className="help-note">Enter today's available limit and outstanding. New card spending increases outstanding and reduces available limit. Bill payments update both amounts. Saving these figures reconciles the current card balance.</p>
   </>:<><label>Opening balance (BDT)<input name="opening_balance" type="number" step="0.01" defaultValue={item?.opening_balance??'0'} required/></label><p className="help-note">For loans, start at 0 and add each person's previous balance inside the account. Existing balances are preserved; do not enter them twice. Use a negative opening balance for money you owe. Cash, bank and mobile banking funds appear in Available fund to use. Savings and receivables stay in their own accounts.</p></>}
  </>;
