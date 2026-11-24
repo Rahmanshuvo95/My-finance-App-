@@ -5,7 +5,7 @@ values (
   'ift-avatars',
   false,
   2097152,
-  array['image/webp']
+  array['image/webp','image/jpeg']
 )
 on conflict (id) do update
 set public = false,
