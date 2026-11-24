@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 const PREVIEW_SIZE = 280;
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-export default function AvatarCropper({ file, busy, onCancel, onSave }) {
+export default function AvatarCropper({ file, busy, error = '', onCancel, onSave }) {
   const [image, setImage] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -57,7 +57,7 @@ export default function AvatarCropper({ file, busy, onCancel, onSave }) {
     if (!context) { setReadError('Photo editing is unavailable in this browser.'); return; }
     context.imageSmoothingQuality = 'high';
     context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 512, 512);
-    canvas.toBlob(blob => blob ? onSave(blob) : setReadError('Could not prepare this image. Try another one.'), 'image/webp', 0.88);
+    canvas.toBlob(blob => { if (!blob) setReadError('Could not prepare this image. Try another one.'); else if (blob.type !== 'image/webp') setReadError('This browser cannot export WebP. Update your browser and try again.'); else onSave(blob); }, 'image/webp', 0.88);
   }
 
   return <div className="avatar-crop-backdrop" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onCancel(); }}>
@@ -70,7 +70,7 @@ export default function AvatarCropper({ file, busy, onCancel, onSave }) {
         {!image&&!readError&&<span className="muted">Preparing preview…</span>}
       </div>
       <label className="avatar-zoom-control">Zoom<input type="range" min="1" max="3" step="0.01" value={zoom} onChange={changeZoom} disabled={!image||busy}/></label>
-      {readError&&<p className="alert avatar-crop-error" role="alert">{readError}</p>}
+      {(readError||error)&&<p className="alert avatar-crop-error" role="alert">{error||readError}</p>}
       <p className="avatar-crop-output">Saved as a private 512 × 512 WebP image.</p>
       <div className="avatar-crop-actions"><button type="button" className="secondary" onClick={onCancel} disabled={busy}>Cancel</button><button type="button" className="primary" onClick={saveCrop} disabled={!image||busy}>{busy?'Uploading…':'Use this photo'}</button></div>
     </section>
