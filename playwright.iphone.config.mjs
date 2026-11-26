@@ -2,7 +2,7 @@ import {defineConfig,devices} from '@playwright/test';
 const phone=devices['iPhone 13'];
 export default defineConfig({
  testDir:'./e2e',
- testMatch:['iphone.spec.mjs','pin.spec.mjs'],
+ testMatch:['iphone.spec.mjs','pin.spec.mjs','motion.spec.mjs'],
  timeout:120000,
  expect:{timeout:30000},
  workers:2,
