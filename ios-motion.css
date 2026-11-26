@@ -1,0 +1,54 @@
+:root{--ift-spring:cubic-bezier(.22,1,.36,1);--ift-ease:cubic-bezier(.32,.72,0,1);view-transition-name:none}
+.main{view-transition-name:ift-page;animation:ift-page-fallback .4s var(--ift-spring) both}
+.main[data-motion=native]{animation:none}
+.page-header h1,.net-card h2,.metric h3{animation:none}
+::view-transition{pointer-events:none}
+::view-transition-group(ift-page){animation-duration:.42s;animation-timing-function:var(--ift-ease)}
+::view-transition-old(ift-page),::view-transition-new(ift-page){mix-blend-mode:normal;animation-duration:.42s;animation-timing-function:var(--ift-ease);height:100%;object-fit:cover;object-position:top}
+::view-transition-old(ift-page){animation-name:ift-tab-out}
+::view-transition-new(ift-page){animation-name:ift-tab-in}
+html[data-ift-navigation=forward]::view-transition-old(ift-page){animation-name:ift-push-out}
+html[data-ift-navigation=forward]::view-transition-new(ift-page){animation-name:ift-push-in}
+html[data-ift-navigation=back]::view-transition-old(ift-page){animation-name:ift-back-out}
+html[data-ift-navigation=back]::view-transition-new(ift-page){animation-name:ift-back-in}
+button{transition:transform .28s var(--ift-spring),background .2s ease,color .2s ease,box-shadow .25s ease}
+button:active:not(:disabled){transform:scale(.97);transition-duration:.08s}
+.mobile-nav button,.nav-item{transition:background .25s var(--ift-ease),color .2s ease,box-shadow .25s ease,transform .3s var(--ift-spring)}
+.mobile-nav button.active svg{animation:ift-icon-settle .36s var(--ift-spring) both}
+.dialog{animation:ift-sheet-in .42s var(--ift-ease) both;transform-origin:50% 100%}
+.dialog::backdrop{animation:ift-backdrop-in .32s ease both}
+.dialog.closing{animation:ift-sheet-out .24s var(--ift-ease) both;pointer-events:none}
+.dialog.closing::backdrop{animation:ift-backdrop-out .24s ease both}
+.dialog-body form,.transaction-choices{animation:ift-form-in .3s var(--ift-ease) both}
+.profile-menu,.account-picker-menu,.quick-add-menu:not([hidden]){animation:ift-menu-in .26s var(--ift-spring) both;transform-origin:top right}
+.quick-add-menu:not([hidden]){transform-origin:bottom right}
+.toast{animation:ift-toast-in .4s var(--ift-spring) both}
+.toast svg{animation:ift-check-in .4s var(--ift-spring) both}
+.pin-card,.avatar-crop-dialog{animation:ift-menu-in .36s var(--ift-spring) both}
+@keyframes ift-page-fallback{from{opacity:.3;translate:0 8px}to{opacity:1;translate:0 0}}
+@keyframes ift-tab-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes ift-tab-out{to{opacity:0;transform:translateY(-4px)}}
+@keyframes ift-push-in{from{opacity:.2;transform:translateX(56px)}to{opacity:1;transform:none}}
+@keyframes ift-push-out{to{opacity:0;transform:translateX(-18px)}}
+@keyframes ift-back-in{from{opacity:.3;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes ift-back-out{to{opacity:0;transform:translateX(56px)}}
+@keyframes ift-sheet-in{from{opacity:0;translate:0 32px;scale:.98}to{opacity:1;translate:0 0;scale:1}}
+@keyframes ift-sheet-out{to{opacity:0;translate:0 32px;scale:.98}}
+@keyframes ift-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes ift-backdrop-out{to{opacity:0}}
+@keyframes ift-form-in{from{opacity:0;translate:12px 0}to{opacity:1;translate:0 0}}
+@keyframes ift-menu-in{from{opacity:0;translate:0 -5px;scale:.96}to{opacity:1;translate:0 0;scale:1}}
+@keyframes ift-toast-in{from{opacity:0;translate:0 14px;scale:.96}to{opacity:1;translate:0 0;scale:1}}
+@keyframes ift-check-in{from{scale:.6}to{scale:1}}
+@keyframes ift-icon-settle{from{scale:.86}to{scale:1}}
+@media(max-width:760px){
+ .dialog{width:min(100%,620px);max-height:calc(100dvh - env(safe-area-inset-top) - 18px);max-width:100%;margin:auto auto 0;border-radius:30px 30px 0 0;padding-bottom:env(safe-area-inset-bottom);animation-name:ift-mobile-sheet-in}
+ .dialog.closing{animation-name:ift-mobile-sheet-out}
+ .dialog-body::before{content:'';display:block;width:34px;height:5px;border-radius:5px;background:currentColor;opacity:.18;margin:-10px auto 19px}
+ @keyframes ift-mobile-sheet-in{from{opacity:.8;translate:0 100%}to{opacity:1;translate:0 0}}
+ @keyframes ift-mobile-sheet-out{to{opacity:.6;translate:0 100%}}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+ ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+}
